@@ -1,4 +1,4 @@
-package it.uninsubria.dista.wc2;
+package mirko.evcount;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
