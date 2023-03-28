@@ -24,12 +24,11 @@ implements Tool {
 
   Path inputPath;
   Path outputDir;
-  int numberOfReducers;
 	int exitCode;  
-	
-	// Parse the parameters
-	// Number of instances of the reducer class 
-    numberOfReducers = Integer.parseInt(args[0]);
+
+    // Set number of elements for top N
+    getConf().set("NumberOfElements", args[0]);
+
     // Folder containing the input data
     inputPath = new Path(args[1]);
     // Output folder
@@ -42,7 +41,8 @@ implements Tool {
 
     // Assign a name to the job
     job.setJobName("Basic MapReduce Project - WordCount example");
-    
+
+
     // Set path of the input file/folder (if it is a folder, the job reads all the files in the specified folder) for this job
     FileInputFormat.addInputPath(job, inputPath);
     
@@ -51,7 +51,6 @@ implements Tool {
     
     // Specify the class of the Driver for this job
     job.setJarByClass(WC_Driver.class);
-    
         
     // Set job input format
     job.setInputFormatClass(TextInputFormat.class);
@@ -61,7 +60,6 @@ implements Tool {
        
     // Set map class
     job.setMapperClass(WC_Mapper.class);
-    
     
     // Set map output key and value classes
     job.setMapOutputKeyClass(Text.class);
@@ -75,7 +73,7 @@ implements Tool {
     job.setOutputValueClass(IntWritable.class);
 
     // Set number of reducers
-    job.setNumReduceTasks(numberOfReducers);
+    job.setNumReduceTasks(1);
     
     
     // Execute the job and wait for completion
