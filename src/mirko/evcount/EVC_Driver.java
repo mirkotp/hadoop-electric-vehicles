@@ -8,6 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
@@ -47,6 +48,9 @@ public class EVC_Driver extends Configured implements Tool {
     
     // Set path of the output folder for this job
     FileOutputFormat.setOutputPath(job, outputDir);
+
+    MultipleOutputs.addNamedOutput(job, "top", TextOutputFormat.class, Text.class, IntWritable.class);
+    MultipleOutputs.addNamedOutput(job, "low", TextOutputFormat.class, Text.class, IntWritable.class);
     
     // Specify the class of the Driver for this job
     job.setJarByClass(EVC_Driver.class);

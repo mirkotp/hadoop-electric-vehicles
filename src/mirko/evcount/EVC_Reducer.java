@@ -1,30 +1,38 @@
 package mirko.evcount;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.util.AbstractMap.SimpleEntry;
+
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 public class EVC_Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-	class KV implements Comparable<KV> {
-		Text key;
-		int value;
+	private int N;
+	private PriorityQueue<SimpleEntry<Text, IntWritable>> top;
+	private PriorityQueue<SimpleEntry<Text, IntWritable>> low;
+	private MultipleOutputs<Text, IntWritable> mos;
 
-		KV(Text key, int value) {
-			this.key = new Text(key);
-			this.value = value;
-		}
+	protected void setup(Context context) throws IOException, InterruptedException {
+		N = Integer.parseInt(context.getConfiguration().get("NumberOfElements"));
+		top = new PriorityQueue<SimpleEntry<Text, IntWritable>>(N, new Comparator<SimpleEntry<Text, IntWritable>>() {
+			public int compare(SimpleEntry<Text, IntWritable> t1, SimpleEntry<Text, IntWritable> t2) {
+				return t1.getValue().compareTo(t2.getValue());
+			}
+			
+		});
 
-		public int compareTo(KV kv) {
-			if (value < kv.value) return -1;
-			else if (value > kv.value) return 1;
-			else return 0;
-		}
+		low = new PriorityQueue<SimpleEntry<Text, IntWritable>>(N, new Comparator<SimpleEntry<Text, IntWritable>>() {
+			public int compare(SimpleEntry<Text, IntWritable> t1, SimpleEntry<Text, IntWritable> t2) {
+				return -(t1.getValue().compareTo(t2.getValue()));
+			}
+		});
+
+		mos = new MultipleOutputs<Text, IntWritable>(context);
 	}
-
-	List<KV> kvs = new ArrayList<KV>();
 	
 	public void reduce(Text key, Iterable<IntWritable> values, Context context)
 			throws IOException, InterruptedException {
@@ -35,27 +43,28 @@ public class EVC_Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 			sum += value.get();
 		}
 
-		kvs.add(new KV(key, sum));
+		SimpleEntry<Text, IntWritable> entry = new SimpleEntry<>(
+			new Text(key), new IntWritable(sum)
+		)
+		;
+		top.add(entry);
+		if (top.size() > N) {
+			top.remove();
+		}
+
+		low.add(entry);
+		if (low.size() > N) {
+			low.remove();
+		}
 	}
 
 	public void cleanup(Context context) throws IOException, InterruptedException {
-		final int N = Integer.parseInt(context.getConfiguration().get("NumberOfElements"));
+		for(SimpleEntry<Text, IntWritable> entry : top) {
+			mos.write("top", entry.getKey(), entry.getValue());
+		}
 
-		KV[] arr = kvs.stream().sorted().toArray(KV[]::new);
-		int size = arr.length;
-
-		if (size <= 2*N) {
-			for (KV kv : arr) {
-				context.write(kv.key, new IntWritable(kv.value));
-			}
-		} else {
-			for (int i = 0; i < N; i++) {
-				context.write(arr[i].key, new IntWritable(arr[i].value));
-			}
-
-			for (int i = size - N; i < size; i++) {
-				context.write(arr[i].key, new IntWritable(arr[i].value));
-			}
+		for(SimpleEntry<Text, IntWritable> entry : low) {
+			mos.write("low", entry.getKey(), entry.getValue());
 		}
 	}
 }
