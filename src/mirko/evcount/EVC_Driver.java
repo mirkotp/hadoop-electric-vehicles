@@ -16,8 +16,7 @@ import org.apache.hadoop.util.ToolRunner;
 /**
  * MapReduce program
  */
-public class WC_Driver extends Configured 
-implements Tool {
+public class EVC_Driver extends Configured implements Tool {
 
   @Override
   public int run(String[] args) throws Exception {
@@ -40,7 +39,7 @@ implements Tool {
     Job job = Job.getInstance(conf); 
 
     // Assign a name to the job
-    job.setJobName("Basic MapReduce Project - WordCount example");
+    job.setJobName("Electric Vehicle Popularity Count");
 
 
     // Set path of the input file/folder (if it is a folder, the job reads all the files in the specified folder) for this job
@@ -50,7 +49,7 @@ implements Tool {
     FileOutputFormat.setOutputPath(job, outputDir);
     
     // Specify the class of the Driver for this job
-    job.setJarByClass(WC_Driver.class);
+    job.setJarByClass(EVC_Driver.class);
         
     // Set job input format
     job.setInputFormatClass(TextInputFormat.class);
@@ -59,14 +58,14 @@ implements Tool {
     job.setOutputFormatClass(TextOutputFormat.class);
        
     // Set map class
-    job.setMapperClass(WC_Mapper.class);
+    job.setMapperClass(EVC_Mapper.class);
     
     // Set map output key and value classes
     job.setMapOutputKeyClass(Text.class);
     job.setMapOutputValueClass(IntWritable.class);
     
     // Set reduce class
-    job.setReducerClass(WC_Reducer.class);
+    job.setReducerClass(EVC_Reducer.class);
         
     // Set reduce output key and value classes
     job.setOutputKeyClass(Text.class);
@@ -92,7 +91,7 @@ implements Tool {
   public static void main(String args[]) throws Exception {
 	// Exploit the ToolRunner class to "configure" and run the Hadoop application
     int res = ToolRunner.run(new Configuration(), 
-    		new WC_Driver(), args);
+    		new EVC_Driver(), args);
 
     System.exit(res);
   }

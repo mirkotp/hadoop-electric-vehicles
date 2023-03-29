@@ -7,7 +7,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class WC_Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+public class EVC_Reducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 	class KV implements Comparable<KV> {
 		Text key;
 		int value;
